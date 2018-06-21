@@ -21,6 +21,8 @@ namespace EventHubs.Web
 
         public void ConfigureServices(IServiceCollection services)
         {
+            services.Add(new ServiceDescriptor(typeof(IConsumer), typeof(Consumer), ServiceLifetime.Singleton));
+
             services.AddSignalR();
             services.AddAuthorization(options =>
             {

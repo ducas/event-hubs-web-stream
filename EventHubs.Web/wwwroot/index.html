@@ -3,31 +3,44 @@
 <head>
     <meta charset="utf-8" />
     <title>SignalR JWT Sample</title>
+    <style type="text/css">
+    table {
+        border-collapse: collapse;
+        width: 100%;
+    }
+
+    table, th, td {
+        border: 1px solid grey;
+        padding: 5px;
+    }
+
+    th.partition, td:first-child {
+        width: 30px;
+        text-align: center;
+    }
+    </style>
 </head>
 <body>
-    <div id="log">
-
-    </div>
+    <table id="log">
+        <thead>
+            <tr><th class="partition">Partition</th><th>Body</th></tr>
+        </thead>
+    </table>
 </body>
 </html>
 <script type="text/javascript" src="lib/signalr.min.js"></script>
 <script>
 
-    function createLog(clientId) {
+    function appendLog(p, b) {
         var log = document.getElementById('log');
-        var ul =  document.createElement('ul');
-        ul.id = 'log' + clientId;
-        log.appendChild(ul);
-    }
-
-    function appendLog(clientId, entry) {
-        var listId = document.getElementById('log' + clientId);
-        if (listId.children.length > 11) {
-            listId.removeChild(listId.children[1]);
-        }
-        var child = document.createElement('li');
-        child.innerText = entry;
-        listId.appendChild(child);
+        var row = document.createElement('tr');
+        var partitionCell = document.createElement('td');
+        partitionCell.innerText = p;
+        var bodyCell = document.createElement('td');
+        bodyCell.innerText = b;
+        row.appendChild(partitionCell);
+        row.appendChild(bodyCell);
+        log.appendChild(row);
     }
 
     function get(url) {
@@ -76,31 +89,24 @@
                     .build();
 
                 connection.on('Message', function (from, message) {
-                    appendLog(clientId, from + ': ' + message);
+                    appendLog(from, message);
                 });
                 return connection.start();
             })
             .then(function () {
-                appendLog(clientId, 'user ' + clientId + ' connected');
+                appendLog('-', 'Connected');
                 setInterval(function () {
-                    appendLog(clientId, 'Refreshing token');
+                    // appendLog('-', 'Refreshing token');
                     refreshToken(clientId);
                 }, 20000);
-                setTimeout(function sendMessage() {
-                    connection.send('broadcast', clientId, 'Hello at ' + new Date().toLocaleString());
-                    var timeout = 2000 + Math.random() * 4000;
-                    setTimeout(sendMessage, timeout);
-                })
             })
             .catch(function (e) {
-                appendLog(clientId, 'Could not start connection');
+                appendLog('-', 'Could not start connection');
             });
     }
 
     var transportType = signalR.HttpTransportType.WebSockets;
     var clientId = 'browser ' + signalR.HttpTransportType[transportType];
-    createLog(clientId);
-    appendLog(clientId, 'Log for user: ' + clientId);
     runConnection(clientId, transportType);
 
 </script>
