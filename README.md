@@ -7,6 +7,13 @@ Connect to an event hub to see all messages as they stream in
 1. Update **EventHubs.Web\appsettings.json** to include your connection string
 1. With docker, run `docker-compose up`. Otherwise, run `dotnet run -p EventHubs.Web`
 
+## Run in kubernetes using helm
+
+1. Install helm
+1. Run `helm init`
+1. Download the latest release of the chart and extract it
+1. Run `helm install ./event-hubs-web-stream -n [release_name] --set connectionString=[event_hubs_connection_string]`
+
 ## What it does...
 
 This project lets you watch messages on an Event Hub by:
