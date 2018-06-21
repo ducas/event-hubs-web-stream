@@ -1,0 +1,10 @@
+version: '3'
+
+services:
+  web:
+    image: eventhubs-web
+    build:
+      context: ./EventHubs.Web
+    ports:
+    - 8000:80
+    

@@ -1,0 +1,5 @@
+[bB]in/
+[oO]bj/
+node_modules/
+
+EventHubs.Web/wwwroot/lib/

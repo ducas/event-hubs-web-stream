@@ -1,0 +1,15 @@
+{
+  "name": "eventhubs.web",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "mkdir -p wwwroot/lib; cp node_modules/@aspnet/signalr/dist/browser/*.min.* wwwroot/lib"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@aspnet/signalr": "^1.0.0"
+  },
+  "devDependencies": {}
+}
