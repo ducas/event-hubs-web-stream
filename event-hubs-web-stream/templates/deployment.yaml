@@ -1,0 +1,61 @@
+apiVersion: apps/v1beta2
+kind: Deployment
+metadata:
+  name: {{ template "event-hubs-web-stream.fullname" . }}
+  labels:
+    app: {{ template "event-hubs-web-stream.name" . }}
+    chart: {{ template "event-hubs-web-stream.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+{{- with .Values.service.annotations }}
+  annotations:
+{{ toYaml . | indent 4 }}
+{{- end }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ template "event-hubs-web-stream.name" . }}
+      release: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app: {{ template "event-hubs-web-stream.name" . }}
+        release: {{ .Release.Name }}
+    spec:
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+            - name: CONNECTIONSTRINGS__EVENTHUBS
+              valueFrom:
+                secretKeyRef:
+                  name: {{ template "event-hubs-web-stream.fullname" . }}
+                  key: connectionString
+          ports:
+            - name: http
+              containerPort: 80
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /index.html
+              port: http
+          readinessProbe:
+            httpGet:
+              path: /index.html
+              port: http
+          resources:
+{{ toYaml .Values.resources | indent 12 }}
+    {{- with .Values.nodeSelector }}
+      nodeSelector:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.affinity }}
+      affinity:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.tolerations }}
+      tolerations:
+{{ toYaml . | indent 8 }}
+    {{- end }}
