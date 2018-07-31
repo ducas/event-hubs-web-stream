@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading;
@@ -7,6 +6,7 @@ using System.Timers;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Azure.EventHubs;
 using Microsoft.Extensions.Configuration;
+using Timer = System.Timers.Timer;
 
 namespace EventHubs.Web
 {
@@ -20,9 +20,9 @@ namespace EventHubs.Web
     {
         public bool Connected { get; private set; }
 
-        List<PartitionReceiver> _receivers = new List<PartitionReceiver>();
-        EventHubClient _eventHubClient;
-        IHubContext<Broadcaster> _context;
+        private readonly List<PartitionReceiver> _receivers = new List<PartitionReceiver>();
+        private readonly EventHubClient _eventHubClient;
+        private readonly IHubContext<Broadcaster> _context;
 
         public Consumer(IConfiguration config, IHubContext<Broadcaster> context)
         {
@@ -30,13 +30,13 @@ namespace EventHubs.Web
             _eventHubClient = EventHubClient.CreateFromConnectionString(config.GetConnectionString("EventHubs"));
         }
 
-        static SemaphoreSlim semaphoreSlim = new SemaphoreSlim(1, 1);
-        private System.Timers.Timer _timer;
+        private static readonly SemaphoreSlim SemaphoreSlim = new SemaphoreSlim(1, 1);
+        private Timer _timer;
 
         public async Task Connect()
         {
             if (Connected) return;
-            await semaphoreSlim.WaitAsync();
+            await SemaphoreSlim.WaitAsync();
             if (Connected) return;
             try
             {
@@ -46,7 +46,7 @@ namespace EventHubs.Web
                     var receiver = _eventHubClient.CreateReceiver(PartitionReceiver.DefaultConsumerGroupName, partitionId, EventPosition.FromEnd());
                     _receivers.Add(receiver);
                 }
-                _timer = new System.Timers.Timer(1000)
+                _timer = new Timer(1000)
                 {
                     AutoReset = true
                 };
@@ -56,7 +56,7 @@ namespace EventHubs.Web
             }
             finally
             {
-                semaphoreSlim.Release();
+                SemaphoreSlim.Release();
             }
         }
 
@@ -65,13 +65,12 @@ namespace EventHubs.Web
             foreach (var receiver in _receivers)
             {
                 var ehEvents = await receiver.ReceiveAsync(100);
-                if (ehEvents != null)
+                if (ehEvents == null) continue;
+                
+                foreach (var ehEvent in ehEvents)
                 {
-                    foreach (var ehEvent in ehEvents)
-                    {
-                        var message = UnicodeEncoding.UTF8.GetString(ehEvent.Body.Array);
-                        await _context.Clients.All.SendAsync("Message", receiver.PartitionId, message);
-                    }
+                    var message = Encoding.UTF8.GetString(ehEvent.Body.Array);
+                    await _context.Clients.All.SendAsync("Message", receiver.PartitionId, message);
                 }
             }
         }

@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.SignalR;
 namespace EventHubs.Web
 {
     [Authorize(JwtBearerDefaults.AuthenticationScheme)]
+    // ReSharper disable once ClassNeverInstantiated.Global
     public class Broadcaster : Hub
     {
         private readonly IConsumer _consumer;

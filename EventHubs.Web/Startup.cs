@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
-using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -14,11 +12,13 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace EventHubs.Web
 {
+    // ReSharper disable once ClassNeverInstantiated.Global
     public class Startup
     {
-        private readonly SymmetricSecurityKey SecurityKey = new SymmetricSecurityKey(Guid.NewGuid().ToByteArray());
-        private readonly JwtSecurityTokenHandler JwtTokenHandler = new JwtSecurityTokenHandler();
+        private static readonly SymmetricSecurityKey SecurityKey = new SymmetricSecurityKey(Guid.NewGuid().ToByteArray());
+        private static readonly JwtSecurityTokenHandler JwtTokenHandler = new JwtSecurityTokenHandler();
 
+        // ReSharper disable once UnusedMember.Global
         public void ConfigureServices(IServiceCollection services)
         {
             services.Add(new ServiceDescriptor(typeof(IConsumer), typeof(Consumer), ServiceLifetime.Singleton));
@@ -65,6 +65,7 @@ namespace EventHubs.Web
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
+        // ReSharper disable once UnusedMember.Global
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
             if (env.IsDevelopment())
@@ -80,7 +81,7 @@ namespace EventHubs.Web
             app.UseRouter(routeBuilder.Build());
         }
 
-        private string GenerateToken(HttpContext httpContext)
+        private static string GenerateToken(HttpContext httpContext)
         {
             var claims = new[] { new Claim(ClaimTypes.NameIdentifier, httpContext.Request.Query["user"]) };
             var credentials = new SigningCredentials(SecurityKey, SecurityAlgorithms.HmacSha256);
