@@ -2,7 +2,7 @@ version: '3'
 
 services:
   web:
-    image: eventhubs-web
+    image: ducas/event-hubs-web-stream
     build:
       context: ./EventHubs.Web
     ports:
